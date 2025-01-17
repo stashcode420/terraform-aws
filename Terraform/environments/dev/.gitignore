@@ -1,0 +1,14 @@
+# environments/dev/.gitignore
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Local environment
+.env
+.envrc
