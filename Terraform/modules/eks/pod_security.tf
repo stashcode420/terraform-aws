@@ -1,47 +1,47 @@
-# modules/eks/pod_security.tf
+# # modules/eks/pod_security.tf
 
-resource "kubernetes_pod_security_policy" "restricted" {
-  metadata {
-    name = "trading-restricted"
-  }
+# resource "kubernetes_pod_security_policy" "restricted" {
+#   metadata {
+#     name = "trading-restricted"
+#   }
 
-  spec {
-    privileged                 = false
-    allow_privilege_escalation = false
+#   spec {
+#     privileged                 = false
+#     allow_privilege_escalation = false
 
-    volumes = [
-      "configMap",
-      "emptyDir",
-      "projected",
-      "secret",
-      "downwardAPI",
-      "persistentVolumeClaim",
-    ]
+#     volumes = [
+#       "configMap",
+#       "emptyDir",
+#       "projected",
+#       "secret",
+#       "downwardAPI",
+#       "persistentVolumeClaim",
+#     ]
 
-    run_as_user {
-      rule = "MustRunAsNonRoot"
-    }
+#     run_as_user {
+#       rule = "MustRunAsNonRoot"
+#     }
 
-    se_linux {
-      rule = "RunAsAny"
-    }
+#     se_linux {
+#       rule = "RunAsAny"
+#     }
 
-    supplemental_groups {
-      rule = "MustRunAs"
-      range {
-        min = 1
-        max = 65535
-      }
-    }
+#     supplemental_groups {
+#       rule = "MustRunAs"
+#       range {
+#         min = 1
+#         max = 65535
+#       }
+#     }
 
-    fs_group {
-      rule = "MustRunAs"
-      range {
-        min = 1
-        max = 65535
-      }
-    }
+#     fs_group {
+#       rule = "MustRunAs"
+#       range {
+#         min = 1
+#         max = 65535
+#       }
+#     }
 
-    read_only_root_filesystem = true
-  }
-}
+#     read_only_root_filesystem = true
+#   }
+# }

@@ -1,39 +1,87 @@
 # modules/eks/monitoring.tf
-resource "aws_cloudwatch_metric_alarm" "node_cpu" {
-  for_each = var.node_groups
 
-  alarm_name          = "${local.name}-${each.key}-high-cpu"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "3"
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = "300"
-  statistic           = "Average"
-  threshold           = "80"
-  alarm_description   = "This metric monitors EC2 CPU utilization"
-  alarm_actions       = [var.sns_topic_arn]
+# Prometheus and Grafana Stack
+# modules/eks/monitoring.tf
+# Update the prometheus_stack helm release
 
-  dimensions = {
-    AutoScalingGroupName = aws_eks_node_group.main[each.key].resources[0].autoscaling_groups[0].name
-  }
+resource "helm_release" "prometheus_stack" {
+  count = var.enable_monitoring ? 1 : 0
+
+  name       = "prometheus"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "kube-prometheus-stack"
+  # namespace  = kubernetes_namespace.monitoring[0].metadata[0].name
+  namespace  = "monitoring"
+  
+  version    = var.prometheus_stack_version
+
+  values = [
+    templatefile("${path.module}/templates/prometheus-values.yaml", {
+      retention_days = var.prometheus_retention_days
+      storage_class = var.prometheus_storage_class
+      grafana_domain = var.grafana_domain
+      admin_password = var.grafana_admin_password
+    })
+  ]
+
+  depends_on = [aws_eks_node_group.main]
 }
 
-resource "aws_cloudwatch_metric_alarm" "node_memory" {
-  for_each = var.node_groups
+# # CloudWatch Container Insights
+# resource "aws_cloudwatch_log_group" "containers" {
+#   count             = var.enable_container_insights ? 1 : 0
+#   name              = "/aws/containerinsights/${local.name}/performance"
+#   retention_in_days = var.log_retention_days
+#   kms_key_id       = aws_kms_key.cloudwatch.arn
 
-  alarm_name          = "${local.name}-${each.key}-high-memory"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "3"
-  metric_name         = "MemoryUtilization"
-  namespace           = "ContainerInsights"
-  period              = "300"
-  statistic           = "Average"
-  threshold           = "80"
-  alarm_description   = "This metric monitors EC2 memory utilization"
-  alarm_actions       = [var.sns_topic_arn]
+#   tags = local.tags
+# }
 
-  dimensions = {
-    ClusterName = aws_eks_cluster.main.name
-    NodeGroup   = each.key
-  }
-}
+# # Fluent Bit for Log Aggregation
+# resource "helm_release" "fluent_bit" {
+#   count = var.enable_container_insights ? 1 : 0
+
+#   name       = "fluent-bit"
+#   repository = "https://fluent.github.io/helm-charts"
+#   chart      = "fluent-bit"
+#   namespace  = kubernetes_namespace.logging[0].metadata[0].name
+#   version    = var.fluent_bit_version
+
+#   values = [
+#     templatefile("${path.module}/templates/fluent-bit-values.yaml", {
+#       log_group_name = aws_cloudwatch_log_group.containers[0].name
+#       region        = data.aws_region.current.name
+#       cluster_name  = local.name
+#     })
+#   ]
+
+#   depends_on = [aws_eks_node_group.main]
+# }
+
+# modules/eks/monitoring.tf
+
+# resource "kubernetes_namespace" "monitoring" {
+#   count = var.enable_monitoring ? 1 : 0
+
+#   depends_on = [aws_eks_cluster.main]
+
+#   metadata {
+#     name = "monitoring"
+#     labels = {
+#       name = "monitoring"
+#     }
+#   }
+# }
+
+# resource "kubernetes_namespace" "logging" {
+#   count = var.enable_logging ? 1 : 0
+
+#   depends_on = [aws_eks_cluster.main]
+
+#   metadata {
+#     name = "logging"
+#     labels = {
+#       name = "logging"
+#     }
+#   }
+# }

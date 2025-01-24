@@ -1,0 +1,47 @@
+# modules/eks/templates/prometheus-values.yaml
+# Update the existing template
+
+prometheus:
+  prometheusSpec:
+    retention: ${retention_days}d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: ${storage_class}
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+    resources:
+      requests:
+        memory: 512Mi
+        cpu: 500m
+      limits:
+        memory: 2Gi
+        cpu: 1000m
+
+grafana:
+  adminPassword: ${admin_password}
+  ingress:
+    enabled: ${grafana_domain != ""}
+    hosts:
+      - ${grafana_domain}
+    annotations:
+      kubernetes.io/ingress.class: alb
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+  persistence:
+    enabled: true
+    storageClassName: ${storage_class}
+    size: 10Gi
+
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: ${storage_class}
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
