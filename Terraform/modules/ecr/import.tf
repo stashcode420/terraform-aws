@@ -42,3 +42,18 @@ import {
   to = aws_ecr_repository.repositories["websocket"]
   id = "websocket"
 }
+
+import {
+  to = aws_ecr_repository.repositories["websocket"]
+  id = "NATs"
+}
+
+import {
+  to = aws_ecr_repository.repositories["websocket"]
+  id = "notifications"
+}
+
+import {
+  to = aws_ecr_repository.repositories["websocket"]
+  id = "stats"
+}
