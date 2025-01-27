@@ -1,0 +1,29 @@
+{
+    "governedRegions": ["us-east-1", "us-east-2"],
+    "organizationStructure": {
+      "security": {
+        "name": "Security"
+      },
+      "sandbox": {
+        "name": "Environments"
+      }
+    },
+    "centralizedLogging": {
+      "accountId": "${var.log_archive_account_id}",
+      "configurations": {
+        "loggingBucket": {
+          "retentionDays": 90
+        },
+        "accessLoggingBucket": {
+          "retentionDays": 90
+        }
+      },
+      "enabled": true
+    },
+    "securityRoles": {
+      "accountId": "${var.audit_account_id}"
+    },
+    "accessManagement": {
+      "enabled": true
+    }
+  }

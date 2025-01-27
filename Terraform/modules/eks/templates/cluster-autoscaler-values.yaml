@@ -1,0 +1,41 @@
+# modules/eks/templates/cluster-autoscaler-values.yaml
+
+autoDiscovery:
+  clusterName: ${cluster_name}
+
+awsRegion: ${region}
+
+rbac:
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: ${role_arn}
+
+extraArgs:
+  skip-nodes-with-local-storage: false
+  skip-nodes-with-system-pods: false
+  balance-similar-node-groups: true
+  expander: least-waste
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 300Mi
+
+priorityClassName: system-cluster-critical
+
+nodeSelector:
+  node-type: system
+
+tolerations:
+  - key: "node-type"
+    operator: "Equal"
+    value: "system"
+    effect: "NoSchedule"
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  fsGroup: 65534
